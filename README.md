@@ -2,6 +2,7 @@
 
 > 一个基于Vue.js和Spring Boot的智能网联汽车云控系统，提供实时数据可视化、3D场景展示和数据分析功能。
 
+首页预览
 ![image](https://github.com/user-attachments/assets/0c7531f8-5c91-415e-8d3e-0c9fd918622c)
 
 
