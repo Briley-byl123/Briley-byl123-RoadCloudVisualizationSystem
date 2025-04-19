@@ -25,6 +25,7 @@
 - Spring Security
 - MyBatis
 - MySQL
+- Redis
 - MQTT (实时数据传输)
 
 ### 3D建模
