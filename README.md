@@ -32,8 +32,23 @@
 - Blender
 - 实时渲染引擎
 
----
+## 📁 项目结构
 
-<div align="center">
-  <sub>Built with ❤️ by your-team-name</sub>
-</div> 
+```
+RoadCloudVisualizationSystem/
+├── RoadCloud/                    # 前端项目目录
+│   ├── src/                      # 源代码
+│   ├── public/                   # 静态资源
+│   └── package.json              # 前端依赖配置
+│
+├── RoadCloudVisualizationSystem/ # 后端项目目录
+│   ├── src/                      # 源代码
+│   ├── resources/                # 配置文件
+│   └── pom.xml                   # 后端依赖配置
+│
+└── 3D-Models/                    # 3D建模文件目录
+    ├── blender/                  # Blender源文件
+    └── exports/                  # 导出模型文件
+```
+
+---
