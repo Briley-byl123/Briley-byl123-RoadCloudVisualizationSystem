@@ -7,7 +7,7 @@
 </div>
 
 <div align="center">
-  <img src="./文档类/展示图/历史回放回放.png" alt="系统详细页预览" width="800"/>
+  <img src="./文档类/展示图/历史回放.png" alt="系统详细页预览" width="800"/>
   <p><em>系统详细页预览</em></p>
 </div>
 
