@@ -119,6 +119,12 @@
                   <span class="label">设备数:</span>
                   <span class="value">{{ selectedNode.value || '0' }}</span>
                 </div>
+                <div class="info-item" v-if="selectedNode.status">
+                  <span class="label">设备状态:</span>
+                  <span class="value" :style="{color: selectedNode.status === '异常' ? '#ff4d4f' : '#00ff99'}">
+                    {{ selectedNode.status }}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -545,8 +551,13 @@ export default {
         // 添加点击事件监听器
         expandedChart.on('click', function(params) {
           if (params.dataType === 'node') {
+            // 判断是否为RCU设备节点（category: 3）
+            if (params.data.category === 3) {
+              // 随机生成状态
+              params.data.status = Math.random() > 0.2 ? '正常' : '异常'
+            }
             selectedNode.value = params.data
-            console.log('选中节点:', selectedNode.value)
+    console.log('选中节点:', selectedNode.value)
           } else {
             // 点击空白区域，清除选中
             selectedNode.value = null
@@ -1024,10 +1035,9 @@ export default {
         console.warn('无法渲染扩展层级视图，数据不完整或图表未初始化')
         return
       }
-      
-      // 复用相同的数据处理逻辑
+
       const apiData = topologyData.value.data
-      
+
       // 创建层级数据
       const data = {
         name: apiData.provicename || '重庆市',
@@ -1035,18 +1045,18 @@ export default {
         category: 0, // 为根节点添加分类信息
         visible: true // 控制节点显示与否
       }
-      
+
       // 根节点显示控制 - 受省级过滤器控制
       if (applyFilters) {
         data.visible = categoryFilters.value[0].active
       }
-      
+
       // 搜索函数 - 检查节点是否匹配搜索关键词
       const matchesSearch = (node) => {
         if (!searchKeyword.value.trim()) return true
         return node.name.toLowerCase().includes(searchKeyword.value.toLowerCase())
       }
-      
+
       // 添加区县级别
       if (apiData.children && apiData.children.length > 0) {
         apiData.children.forEach(district => {
@@ -1054,20 +1064,18 @@ export default {
             name: district.city,
             value: 0,
             children: [],
-            category: 1, // 为节点添加分类信息
+            category: 1,
             lng: district.lng,
             lat: district.lat,
-            visible: true // 默认显示
+            visible: true
           }
-          
-          // 应用区县级过滤
+
           if (applyFilters) {
             districtNode.visible = categoryFilters.value[1].active
           }
-          
-          // 检查搜索匹配
+
           const districtMatchesSearch = matchesSearch(districtNode)
-          
+
           // 添加地标级别
           if (district.children && district.children.length > 0) {
             district.children.forEach(landmark => {
@@ -1075,121 +1083,108 @@ export default {
                 name: landmark.landmark,
                 value: 0,
                 children: [],
-                category: 2, // 为节点添加分类信息
+                category: 2,
                 lng: landmark.lng,
                 lat: landmark.lat,
-                visible: true // 默认显示
+                visible: true
               }
-              
-              // 应用地标级过滤
+
               if (applyFilters) {
                 landmarkNode.visible = categoryFilters.value[2].active
               }
-              
-              // 检查搜索匹配
+
               const landmarkMatchesSearch = matchesSearch(landmarkNode)
-              
+
               // 添加RCU设备
               if (landmark.children && landmark.children.length > 0) {
                 landmark.children.forEach(rcu => {
                   const rcuNode = {
                     name: rcu.rcuId,
                     value: 1,
-                    category: 3, // 为节点添加分类信息
+                    category: 3,
                     lng: rcu.lng,
                     lat: rcu.lat,
-                    visible: true // 默认显示
+                    visible: true,
+                    status: Math.random() > 0.2 ? '正常' : '异常' // 随机生成状态
                   }
-                  
-                  // 应用RCU设备级过滤
+
                   if (applyFilters) {
                     rcuNode.visible = categoryFilters.value[3].active
                   }
-                  
-                  // 检查搜索匹配
+
                   const rcuMatchesSearch = matchesSearch(rcuNode)
-                  
-                  // 如果RCU节点匹配搜索或搜索为空，添加此节点
+
                   if ((rcuMatchesSearch || !searchKeyword.value.trim()) && (rcuNode.visible || !applyFilters)) {
                     landmarkNode.children.push(rcuNode)
-                    // 只计算可见子节点
                     if (rcuNode.visible || !applyFilters) {
                       landmarkNode.value++
                     }
                   }
                 })
               }
-              
-              // 检查是否应该添加此地标节点
-              const shouldAddLandmark = (landmarkMatchesSearch || 
-                                        !searchKeyword.value.trim() || 
-                                        landmarkNode.children.length > 0) &&
-                                        (landmarkNode.visible || !applyFilters);
-              
+
+              const shouldAddLandmark = (landmarkMatchesSearch ||
+                !searchKeyword.value.trim() ||
+                landmarkNode.children.length > 0) &&
+                (landmarkNode.visible || !applyFilters)
+
               if (shouldAddLandmark) {
                 districtNode.children.push(landmarkNode)
-                // 只计算可见子节点的值
                 if (landmarkNode.visible || !applyFilters) {
                   districtNode.value += landmarkNode.value
                 }
               }
             })
           }
-          
-          // 检查是否应该添加此区县节点
-          const shouldAddDistrict = (districtMatchesSearch || 
-                                    !searchKeyword.value.trim() || 
-                                    districtNode.children.length > 0) &&
-                                    (districtNode.visible || !applyFilters);
-          
+
+          const shouldAddDistrict = (districtMatchesSearch ||
+            !searchKeyword.value.trim() ||
+            districtNode.children.length > 0) &&
+            (districtNode.visible || !applyFilters)
+
           if (shouldAddDistrict) {
             data.children.push(districtNode)
           }
         })
       }
-      
+
       // 保存节点信息以供UI展示
       nodes.value = countAllVisibleNodes(data)
-      
+
       // 重要：创建所有可能的树结构，然后通过节点显隐来控制过滤效果
       function prepareNodesForFiltering(treeData) {
-        // 递归处理每个节点
         function processNode(node) {
-          // 处理当前节点的子节点
           if (node.children && node.children.length > 0) {
             node.children.forEach(child => {
               processNode(child)
             })
           }
         }
-        
         processNode(treeData)
         return treeData
       }
-      
+
       const processedData = prepareNodesForFiltering(data)
-      
-      // 扩展视图配置
+
       const option = {
         tooltip: {
           trigger: 'item',
           formatter: function (params) {
             const data = params.data
-            if (data.value) {
-              let content = `<div style="font-weight:bold;color:#00ffff;margin-bottom:5px;">${params.name}</div>`
+            let content = `<div style="font-weight:bold;color:#00ffff;margin-bottom:5px;">${params.name}</div>`
+            if (data.value !== undefined) {
               content += `设备数量: ${data.value} 台<br>`
-              
-              if (data.lng && data.lat) {
-                content += `位置: ${data.lng.toFixed(4)}, ${data.lat.toFixed(4)}<br>`
-              }
-              
-              if (data.category !== undefined) {
-                content += `类型: ${getCategoryName(data.category)}`
-              }
-              
-              return content
             }
-            return params.name
+            if (data.lng && data.lat) {
+              content += `位置: ${data.lng.toFixed(4)}, ${data.lat.toFixed(4)}<br>`
+            }
+            if (data.category !== undefined) {
+              content += `类型: ${getCategoryName(data.category)}<br>`
+            }
+            if (data.category === 3 && data.status) {
+              content += `状态: <span style="color:${data.status === '异常' ? '#ff4d4f' : '#00ff99'}">${data.status}</span>`
+            }
+            return content
           },
           backgroundColor: 'rgba(8, 24, 44, 0.9)',
           borderColor: 'rgba(0, 181, 255, 0.5)',
@@ -1215,7 +1210,7 @@ export default {
           borderColor: 'rgba(0, 181, 255, 0.3)',
           borderWidth: 1,
           borderRadius: 4,
-          selectedMode: false // 禁用图例切换，使用自定义过滤器
+          selectedMode: false
         },
         series: [
           {
@@ -1223,21 +1218,20 @@ export default {
             data: [processedData],
             top: '5%',
             left: '15%',
-            bottom: '10%', // 留出底部空间给图例
+            bottom: '10%',
             right: '15%',
-            zoom: zoomLevel.value, // 使用保存的缩放级别
+            zoom: zoomLevel.value,
             roam: true,
-            symbolSize: function(value, params) {
-              const depth = params.data.depth || 0;
-              const sizes = [20, 16, 14, 12]; // 增大一些节点尺寸
-              return sizes[Math.min(depth, sizes.length - 1)];
+            symbolSize: function (value, params) {
+              const depth = params.data.depth || 0
+              const sizes = [20, 16, 14, 12]
+              return sizes[Math.min(depth, sizes.length - 1)]
             },
             itemStyle: {
-              color: function(params) {
-                // 根据数据的分类确定节点颜色
-                const category = params.data.category !== undefined ? params.data.category : params.data.depth || 0;
-                const colors = ['#1A73E8', '#00B0FF', '#7EFFED', '#00FFAA'];
-                return colors[Math.min(category, colors.length - 1)];
+              color: function (params) {
+                const category = params.data.category !== undefined ? params.data.category : params.data.depth || 0
+                const colors = ['#1A73E8', '#00B0FF', '#7EFFED', '#00FFAA']
+                return colors[Math.min(category, colors.length - 1)]
               },
               borderColor: 'rgba(255, 255, 255, 0.5)',
               borderWidth: 1,
@@ -1249,7 +1243,7 @@ export default {
               position: 'left',
               verticalAlign: 'middle',
               align: 'right',
-              fontSize: 14, // 增大字体
+              fontSize: 14,
               color: '#fff',
               distance: 5,
               backgroundColor: 'rgba(8, 24, 44, 0.6)',
@@ -1276,7 +1270,7 @@ export default {
                 fontSize: 16
               }
             },
-            initialTreeDepth: searchKeyword.value.trim() ? 5 : 2, // 如果在搜索则展开所有层级
+            initialTreeDepth: searchKeyword.value.trim() ? 5 : 2,
             lineStyle: {
               color: {
                 type: 'linear',
@@ -1289,7 +1283,7 @@ export default {
                   { offset: 1, color: 'rgba(0, 210, 255, 0.7)' }
                 ]
               },
-              width: 2, // 稍微加粗线条
+              width: 2,
               curveness: 0.5,
               shadowColor: 'rgba(0, 181, 255, 0.3)',
               shadowBlur: 5
@@ -1299,22 +1293,21 @@ export default {
             animationDurationUpdate: 750
           }
         ],
-        backgroundColor: 'transparent' // 使用透明背景
+        backgroundColor: 'transparent'
       }
-      
+
       // 在将数据传递给ECharts前，为每个节点添加深度信息
       function addDepthInfo(node, depth = 0) {
-        node.depth = depth;
+        node.depth = depth
         if (node.children && node.children.length > 0) {
-          node.children.forEach(child => addDepthInfo(child, depth + 1));
+          node.children.forEach(child => addDepthInfo(child, depth + 1))
         }
-        return node;
+        return node
       }
-      
-      // 添加深度信息
-      addDepthInfo(processedData);
-      
-      expandedChart.setOption(option, true);
+
+      addDepthInfo(processedData)
+
+      expandedChart.setOption(option, true)
       console.log('扩展层级视图渲染完成，节点数:', nodes.value.length)
     }
     
@@ -1723,7 +1716,8 @@ export default {
                     category: 3,
                     lng: rcu.lng,
                     lat: rcu.lat,
-                    symbol: 'diamond'
+                    symbol: 'diamond',
+                    status: Math.random() > 0.2 ? '正常' : '异常' // 随机生成状态
                   }
                   
                   // 检查RCU是否匹配搜索

@@ -1,7 +1,7 @@
 # 🚗 智能网联汽车云控系统
 
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/0c7531f8-5c91-415e-8d3e-0c9fd918622c" alt="系统首页预览" width="800"/>
+  <img src="./文档类/展示图/首页.png" alt="系统首页预览" width="800"/>
   <p><em>系统首页预览</em></p>
 </div>
 
