@@ -1,11 +1,26 @@
 # 🚗 智能网联汽车云控系统
+> 一个基于Vue.js和Spring Boot的智能网联汽车云控系统，提供实时数据可视化、3D场景展示和数据分析功能。
 
 <div align="center">
   <img src="./文档类/展示图/首页.png" alt="系统首页预览" width="800"/>
   <p><em>系统首页预览</em></p>
 </div>
 
-> 一个基于Vue.js和Spring Boot的智能网联汽车云控系统，提供实时数据可视化、3D场景展示和数据分析功能。
+<div align="center">
+  <img src="./文档类/展示图/历史回放回放.png" alt="系统详细页预览" width="800"/>
+  <p><em>系统详细页预览</em></p>
+</div>
+
+<div align="center">
+  <img src="./文档类/展示图/3D实时路况.png" alt="系统3D实时路况预览" width="800"/>
+  <p><em>系统3D实时路况预览</em></p>
+</div>
+
+<div align="center">
+  <img src="./文档类/展示图/后台主题订阅.png" alt="系统后台管理系统预览" width="800"/>
+  <p><em>系统后台管理系统预览</em></p>
+</div>
+
 
 ## ✨ 功能特点
 
